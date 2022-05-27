@@ -4,7 +4,6 @@
  */
 import { getInjectable } from "@ogre-tools/injectable";
 import { computed } from "mobx";
-import type { KubeResource } from "../../../common/rbac";
 import isAllowedResourceInjectable from "../../../common/utils/is-allowed-resource.injectable";
 import clusterOverviewRouteInjectable from "../../../common/front-end-routing/routes/cluster/overview/cluster-overview-route.injectable";
 import workloadsOverviewRouteInjectable from "../../../common/front-end-routing/routes/cluster/workloads/overview/workloads-overview-route.injectable";
@@ -14,20 +13,24 @@ const startUrlInjectable = getInjectable({
   id: "start-url",
 
   instantiate: (di) => {
-    const isAllowedResource = (resourceName: any) => di.inject(isAllowedResourceInjectable, resourceName);
-
     const clusterOverviewRoute = di.inject(clusterOverviewRouteInjectable);
     const workloadOverviewRoute = di.inject(workloadsOverviewRouteInjectable);
     const clusterOverviewUrl = buildURL(clusterOverviewRoute.path);
     const workloadOverviewUrl = buildURL(workloadOverviewRoute.path);
+    const eventsAreAllowed = di.inject(isAllowedResourceInjectable, "events");
+    const nodesAreAllowed = di.inject(isAllowedResourceInjectable, "nodes");
+    const podsAreAllowed = di.inject(isAllowedResourceInjectable, "pods");
+    const clusterOverviewIsAllowed = computed(() => (
+      eventsAreAllowed.get()
+      && nodesAreAllowed.get()
+      && podsAreAllowed.get()
+    ));
 
-    return computed(() => {
-      const resources: KubeResource[] = ["events", "nodes", "pods"];
-
-      return resources.every((resourceName) => isAllowedResource(resourceName))
+    return computed(() => (
+      clusterOverviewIsAllowed.get()
         ? clusterOverviewUrl
-        : workloadOverviewUrl;
-    });
+        : workloadOverviewUrl
+    ));
   },
 });
 

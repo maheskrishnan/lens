@@ -154,7 +154,7 @@ export async function bootstrap(di: DiContainer) {
   try {
     await initializeApp(() => unmountComponentAtNode(rootElem));
   } catch (error) {
-    console.error(`[BOOTSTRAP]: view initialization error: ${error}`, {
+    console.error(`${logPrefix}: view initialization error: ${error}`, {
       origin: location.href,
       isTopFrameView: process.isMainFrame,
     });

@@ -4,7 +4,6 @@
  */
 import { getInjectable } from "@ogre-tools/injectable";
 import routesInjectable from "./routes.injectable";
-import { matches } from "lodash/fp";
 import { computed } from "mobx";
 import { matchPath } from "react-router";
 import currentPathInjectable from "./current-path.injectable";
@@ -17,20 +16,24 @@ const matchingRouteInjectable = getInjectable({
     const currentPath = di.inject(currentPathInjectable);
 
     return computed(() => {
-      const matchedRoutes = routes.get().map((route) => {
-        const match = matchPath(currentPath.get(), {
+      const allRoutes = routes.get();
+      const current = currentPath.get();
+
+      for (const route of allRoutes) {
+        const matchResult = matchPath(current, {
           path: route.path,
           exact: true,
         });
 
-        return {
-          route,
-          isMatching: !!match,
-          pathParameters: match ? match.params : {},
-        };
-      });
+        if (matchResult) {
+          return {
+            route,
+            pathParameters: matchResult.params,
+          };
+        }
+      }
 
-      return matchedRoutes.find(matches({ isMatching: true }));
+      return undefined;
     });
   },
 });

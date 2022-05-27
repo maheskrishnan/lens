@@ -12,7 +12,7 @@ export function isAllowedResource(resource: KubeResource | KubeResource[]) {
 
   const di = getLegacyGlobalDiForExtensionApi();
 
-  return resources.every((resourceName: any) => {
+  return resources.every((resourceName) => {
     const _isAllowedResource = di.inject(isAllowedResourceInjectable, resourceName);
 
     // Note: Legacy isAllowedResource does not advertise reactivity
